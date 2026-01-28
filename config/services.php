@@ -35,4 +35,12 @@ return [
         ],
     ],
 
+    'ota' => [
+        'url' => env('OTA_API_URL'), // This looks at the .env file
+        'timeout' => 30,             // You can add other defaults here
+        'username' => env('OTA_USERNAME'),
+        'password' => env('OTA_PASSWORD'),
+        'count' => 7,
+    ],
+
 ];
