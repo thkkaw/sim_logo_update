@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use App\Services\OtaApiService;
 use App\Models\SimLogoTransaction;
+use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Validator;
 
@@ -22,6 +23,7 @@ class SimLogoController extends Controller
 
     public function index(Request $request)
     {
+        Log::channel('api')->info('API Request : ' . json_encode($request->all()));
         // 1. Validate request
         $validator = Validator::make($request->all(), [
             'msisdn' => [
@@ -41,65 +43,80 @@ class SimLogoController extends Controller
 
         $msisdn = $validator->validated()['msisdn'];
 
-        // 2. Fetch transaction
+        // 2. Fetch or create transaction
         $simLogoTransaction = SimLogoTransaction::where('msisdn', $msisdn)->first();
 
-        if (isset($simLogoTransaction)) {
-
-            if ($simLogoTransaction->status === '404'){
+        if ($simLogoTransaction) {
+            if ($simLogoTransaction->status === 404) {
                 return response()->json([
-                    'status' => '404',
-                    'msisdn' => $simLogoTransaction->msisdn
+                    'status' => 404,
+                    'msisdn' => $simLogoTransaction->msisdn,
                 ], 200);
             }
 
             if ($simLogoTransaction->status === 'success') {
                 return response()->json([
                     'status' => 'success',
-                    'msisdn' => $simLogoTransaction->msisdn
+                    'msisdn' => $simLogoTransaction->msisdn,
                 ], 200);
             }
-
-        }else{
+        } else {
             $simLogoTransaction = SimLogoTransaction::create([
-                'msisdn' => $request->msisdn
+                'msisdn' => $msisdn,
             ]);
         }
 
-        //call SET_SPN API
-        $this->requestSPN($request->msisdn, $simLogoTransaction);
+        // 3. Call SET_SPN and PNN APIs
+        $spnApiResult = $this->requestSPN($msisdn, $simLogoTransaction);
+        $pnnApiResult = $this->requestPNN($msisdn, $simLogoTransaction);
 
-        $this->requestPNN($request->msisdn, $simLogoTransaction);
+        if (!$spnApiResult && !$pnnApiResult) {
+            
+                $simLogoTransaction->update([
+                    'status' => '404'
+                ]);
 
-        return response()->json([
-            'status'  => 'processing',
-            'msisdn'  => $msisdn,
-        ], 202);
+                return response()->json([
+                    'status' => 404,
+                    'msisdn' => $msisdn,
+                ], 202);
+
+            } else {
+                return response()->json([
+                    'status' => 'processing',
+                    'msisdn' => $msisdn,
+                ], 202);
+        }
+
     }
 
     public function requestSPN(string $msisdn, SimLogoTransaction $transaction): bool
     {
         $response = $this->otaApiService->setSPN($msisdn);
 
-        if (($response['result'] ?? null) === 404) {
-            if(isset($transaction->remark)){
-                $remark[] = json_decode($transaction->remark);
-            }
-            $remark[] = [
-                Carbon::now()->toDateTimeString() => '404 Not Found'
-            ];
-            $transaction->update([
-                'status' => '404',
-                'remark' => json_encode(array_values($remark))
-            ]);
-
-            return false;
-        }
-
         if (!empty($response['transaction_id'])) {
             $transaction->update([
                 'transaction_spn' => $response['transaction_id'],
             ]);
+        }
+
+        if (($response['result'] ?? null) === '404') {
+
+            $remark = [];
+
+            if (!empty($transaction->remark)) {
+                $remark = json_decode($transaction->remark, true);
+            }
+
+            $remark[] = [
+                'SPN', Carbon::now()->toDateTimeString(), '404 Not Found',
+            ];
+
+            $transaction->update([
+                'remark' => json_encode(array_values($remark)),
+            ]);
+
+            return false;
         }
 
         return true;
@@ -109,25 +126,29 @@ class SimLogoController extends Controller
     {
         $response = $this->otaApiService->setPNN($msisdn);
 
-        if (($response['result'] ?? null) === 404) {
-             if(isset($transaction->remark)){
-                $remark[] = json_decode($transaction->remark);
-            }
-            $remark[] = [
-                Carbon::now()->toDayDateTimeString() => '404 Not Found'
-            ];
-            $transaction->update([
-                'status' => '404',
-                'remark' => json_encode(array_values($remark))
-            ]);
-
-            return false;
-        }
-
         if (!empty($response['transaction_id'])) {
             $transaction->update([
                 'transaction_pnn' => $response['transaction_id'],
             ]);
+        }
+
+        if (($response['result'] ?? null) === '404') {
+
+            $remark = [];
+
+            if (!empty($transaction->remark)) {
+                $remark = json_decode($transaction->remark, true);
+            }
+
+            $remark[] = [
+                'PNN', Carbon::now()->toDateTimeString(), '404 Not Found',
+            ];
+
+            $transaction->update([
+                'remark' => json_encode(array_values($remark)),
+            ]);
+
+            return false;
         }
 
         return true;
@@ -152,9 +173,9 @@ class SimLogoController extends Controller
 
     //     if (isset($simLogoTransaction)) {
 
-    //         if ($simLogoTransaction->status === '404'){
+    //         if ($simLogoTransaction->status === 404){
     //             return response()->json([
-    //                 'status' => '404',
+    //                 'status' => 404,
     //                 'msisdn' => $simLogoTransaction->msisdn
     //             ], 200);
     //         }
@@ -183,7 +204,7 @@ class SimLogoController extends Controller
     //     $spnApiResult = $this->otaApiService->setSPN($msisdn);
 
     //         if (isset($spnApiResult["result"]) && $spnApiResult["result"] === 404) {
-    //             $simLogoTransaction->status = '404';
+    //             $simLogoTransaction->status = 404;
     //             $simLogoTransaction->save();
 
     //             return response()->json([
@@ -209,7 +230,7 @@ class SimLogoController extends Controller
     //     $pnnApiResult = $this->otaApiService->setPNN($msisdn);
 
     //         if (isset($pnnApiResult["result"]) && $pnnApiResult["result"] === 404) {
-    //             $simLogoTransaction->status = '404';
+    //             $simLogoTransaction->status = 404;
     //             $simLogoTransaction->save();
 
     //             return response()->json([

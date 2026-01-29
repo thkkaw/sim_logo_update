@@ -6,15 +6,14 @@ use Illuminate\Support\Facades\Http;
 
 class OtaApiService
 {
-    public function setSPN($msisdn)
-    {
+    public function setSPN($msisdn) {
         try {
             // return [
             //         'transaction_id' => "123456781"
             // ];
 
             return [
-                    "result"=> 404,
+                    "result"=> '404',
                     "params"=> "{}",
                     "por"=> "No card image"
             ];
@@ -57,22 +56,28 @@ class OtaApiService
         }
     }
 
-    public function setPNN($msisdn)
-    {
+    public function setPNN($msisdn) {
         try {
-            // return [
-            //         'transaction_id' => "123456782"
-            //     ];
-
             return [
-                    "result"=> 404,
-                    "params"=> "{}",
-                    "por"=> "No card image"
-            ];
+                    'transaction_id' => "123456782"
+                ];
+
+            // return [
+            //         "result" => '404',
+            //         "params" => "{}",
+            //         "por" => "No card image"
+            // ];
 
             $otaUserName = config('services.ota.username');
             $otaPassword = config('services.ota.password');
-            $parameters = '{"command": "SET_PNN", "msisdn": ' . $msisdn . ', "params":{"index":"1","name":"U9"}}';
+            $parameters = '{
+                "command": "SET_PNN",
+                "msisdn": ' . $msisdn . ',
+                "params":{
+                    "index":"1",
+                    "name":"U9"
+                }
+            }';
             $baseUrl = config('services.ota.url');
             $endPoint = "{$baseUrl}/send_simota_command";
 
@@ -100,8 +105,7 @@ class OtaApiService
         }
     }
 
-    public function getTransactionStatus($transactionId)
-    {
+    public function getTransactionStatus($transactionId) {
         try {
             return [
                     "por" => "029000005539ffffffffffffffffffffffffffff - POR OK",
