@@ -36,28 +36,33 @@ class CheckSimStatus extends Command
             ->whereBetween('updated_at', [$startWindow, $endWindow])
             ->get();
 
-        // $transactions = SimLogoTransaction::where('status', 'pending')
-        //     ->where('updated_at', '>=', Carbon::now()->subHour())
-        //     ->get();
-
         foreach ($transactions as $txn) {
 
-            $transactionStatus = $otaApiService->getTransactionStatus($txn->transaction_id);
+            $transactionSpnStatus = $otaApiService->getTransactionStatus($txn->transaction_spn);
 
-            if (isset($transactionStatus) && isset($transactionStatus["params"]["spn"])) {
+            if (isset($transactionSpnStatus) && isset($transactionSpnStatus["params"]["spn"])) {
 
-                Log::channel('api')->info("SPN exists for transaction: {$txn->transaction_spn}");
-                if ($transactionStatus["params"]["spn"] === 'U9') {
+                Log::channel('api')->info("SPN for transaction: {$txn->transaction_spn}");
+
+                if ($transactionSpnStatus["params"]["spn"] === 'U9') {
                     $txn->update([
                         'status' => 'success'
                     ]);
                 }
             }
-            // Logic: "To get the transaction status"
-            $this->info("Checking status for: {$txn->transaction_spn}");
 
-            // Example: Update DB based on result
-            // $txn->update(['status' => 'success']);
+            $transactionPnnStatus = $otaApiService->getTransactionStatus($txn->transaction_pnn);
+
+            if (isset($transactionPnnStatus) && isset($transactionPnnStatus["params"]["pnn"])) {
+
+                Log::channel('api')->info("PNN for transaction: {$txn->transaction_pnn}");
+
+                if ($transactionPnnStatus["params"]["pnn"] === 'U9') {
+                    $txn->update([
+                        'status' => 'success'
+                    ]);
+                }
+            }
         }
     }
 }

@@ -40,7 +40,7 @@ return [
         'timeout' => 30,             // You can add other defaults here
         'username' => env('OTA_USERNAME'),
         'password' => env('OTA_PASSWORD'),
-        'count' => 7,
+        'try_count' => env('TRY_COUNT'),
     ],
 
 ];

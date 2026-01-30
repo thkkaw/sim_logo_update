@@ -23,8 +23,8 @@ class SimLogoController extends Controller
 
     public function index(Request $request)
     {
-        Log::channel('api')->info('API Request : ' . json_encode($request->all()));
-        // 1. Validate request
+        Log::channel('api')->info('Payload : ' . json_encode($request->all()));
+
         $validator = Validator::make($request->all(), [
             'msisdn' => [
                 'required',
@@ -43,11 +43,11 @@ class SimLogoController extends Controller
 
         $msisdn = $validator->validated()['msisdn'];
 
-        // 2. Fetch or create transaction
         $simLogoTransaction = SimLogoTransaction::where('msisdn', $msisdn)->first();
 
         if ($simLogoTransaction) {
-            if ($simLogoTransaction->status === 404) {
+
+            if ($simLogoTransaction->status === '404') {
                 return response()->json([
                     'status' => 404,
                     'msisdn' => $simLogoTransaction->msisdn,
@@ -60,18 +60,25 @@ class SimLogoController extends Controller
                     'msisdn' => $simLogoTransaction->msisdn,
                 ], 200);
             }
+
+            if ($simLogoTransaction->status === 'fail') {
+                $simLogoTransaction->update([
+                    'status' => 'pending'
+                ]);
+            }
+
+
         } else {
             $simLogoTransaction = SimLogoTransaction::create([
                 'msisdn' => $msisdn,
             ]);
         }
 
-        // 3. Call SET_SPN and PNN APIs
         $spnApiResult = $this->requestSPN($msisdn, $simLogoTransaction);
         $pnnApiResult = $this->requestPNN($msisdn, $simLogoTransaction);
 
         if (!$spnApiResult && !$pnnApiResult) {
-            
+
                 $simLogoTransaction->update([
                     'status' => '404'
                 ]);

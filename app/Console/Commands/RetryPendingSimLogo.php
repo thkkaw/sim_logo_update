@@ -3,12 +3,17 @@
 namespace App\Console\Commands;
 
 use App\Models\SimLogoTransaction;
+use App\Services\OtaApiService;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class RetryPendingSimLogo extends Command
 {
+
+    public $remark = [];
+
     /**
      * The name and signature of the console command.
      *
@@ -21,28 +26,122 @@ class RetryPendingSimLogo extends Command
      *
      * @var string
      */
-    protected $description = 'Retries pending transactions where count < 7';
+    protected $description = 'Retries pending transactions where count < try_count';
 
     /**
      * Execute the console command.
      */
-    public function handle()
+    public function handle(OtaApiService $otaApiService)
     {
         $transactions = SimLogoTransaction::where('status', 'pending')
-            ->where('count', '<', 7)
-            ->whereDate('created_at', Carbon::today())
+            ->where('count', '<', config('services.ota.try_count'))
+            ->whereBetween('created_at', [
+                Carbon::today()->startOfDay(),
+                Carbon::today()->endOfDay(),
+            ])
             ->get();
 
         foreach ($transactions as $txn) {
-            $response = Http::post('https://api-url/api/simota/send_simota_command', [
-                'transaction_id' => $txn->transaction_id,
-                // Add other required payloads here
+
+            $simLogoTransaction = SimLogoTransaction::findOrFail($txn->id);
+
+            $spnApiResult = $this->requestSPN($txn->msisdn, $txn, $otaApiService);
+            $pnnApiResult = $this->requestPNN($txn->msisdn, $txn, $otaApiService);
+
+            if (!$spnApiResult && !$pnnApiResult) {
+
+                $simLogoTransaction->update([
+                    'status' => '404',
+                ]);
+            }
+            
+            if (($txn->count + 1) == config('services.ota.try_count')) {
+
+                Log::info($simLogoTransaction->count.','.config('services.ota.try_count'));
+                $remark = [];
+
+                if (!empty($simLogoTransaction->remark)) {
+                    $remark = json_decode($simLogoTransaction->remark, true);
+                }
+
+                $remark[] = [
+                    Carbon::now()->toDateTimeString(), 'Try count has reached its limit.',
+                ];
+
+                $simLogoTransaction->update([
+                    'count' => 0,
+                    'status' => 'fail',
+                    'remark' => json_encode(array_values($remark)),
+                ]);
+            }else{
+                $simLogoTransaction->update([
+                    'count' => $txn->count + 1 ,
+                ]);
+            }
+        }
+    }
+
+    public function requestSPN(string $msisdn, SimLogoTransaction $transaction, $otaApiService): bool
+    {
+        $response = $otaApiService->setSPN($msisdn);
+
+        if (!empty($response['transaction_id'])) {
+            $transaction->update([
+                'transaction_spn' => $response['transaction_id'],
+            ]);
+        }
+
+        if (($response['result'] ?? null) === '404') {
+
+            $remark = [];
+
+            if (!empty($transaction->remark)) {
+                $remark = json_decode($transaction->remark, true);
+            }
+
+            $remark[] = [
+                'SPN', Carbon::now()->toDateTimeString(), '404 Not Found',
+            ];
+
+            $transaction->update([
+                'remark' => json_encode(array_values($remark)),
             ]);
 
-            // Increment count as per logic
-            $txn->increment('count');
-
-            $this->info("Retried transaction: {$txn->transaction_id}");
+            return false;
         }
+
+        return true;
+    }
+
+    public function requestPNN(string $msisdn, SimLogoTransaction $transaction, $otaApiService): bool
+    {
+        $response = $otaApiService->setPNN($msisdn);
+
+        if (!empty($response['transaction_id'])) {
+            $transaction->update([
+                'transaction_pnn' => $response['transaction_id'],
+            ]);
+        }
+
+        if (($response['result'] ?? null) === '404') {
+
+            $remark = [];
+
+            if (!empty($transaction->remark)) {
+                $remark = json_decode($transaction->remark, true);
+            }
+
+            $remark[] = [
+                'PNN', Carbon::now()->toDateTimeString(), '404 Not Found',
+            ];
+
+            $transaction->update([
+                'remark' => json_encode(array_values($remark)),
+            ]);
+
+            return false;
+        }
+
+        return true;
     }
 }
