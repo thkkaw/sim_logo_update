@@ -40,7 +40,7 @@ deploy_staging:
   before_script:
     - cd /data/apps/sim-logo-update
   script:
-    - sudo -u appown -H sh -c 'cd /data/apps/sim-logo-update && git pull staging'
+    - sudo -u appown -H sh -c 'cd /data/apps/sim-logo-update && git pull'
    # - docker exec sourcing_portal php artisan migrate
    # - docker exec sourcing_portal php artisan users:permissions
    # - docker exec sourcing_portal php artisan setup:data
