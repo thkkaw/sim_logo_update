@@ -32,7 +32,7 @@ build-sonar:
     - if: $CI_COMMIT_BRANCH == 'main'
     - if: $CI_COMMIT_BRANCH == 'develop'
 
-  tag:
+  tags:
     - sonar-runner  
 
 deploy_staging:
