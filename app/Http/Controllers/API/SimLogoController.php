@@ -14,7 +14,7 @@ class SimLogoController extends Controller
 {
 
     protected OtaApiService $otaApiService;
-    public $remark = [];
+    public array $remark = [];
 
     public function __construct(OtaApiService $otaApiService)
     {

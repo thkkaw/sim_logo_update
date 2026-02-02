@@ -12,11 +12,11 @@ class OtaApiService
             //         'transaction_id' => "123456781"
             // ];
 
-            return [
-                    "result"=> '404',
-                    "params"=> "{}",
-                    "por"=> "No card image"
-            ];
+            // return [
+            //         "result"=> '404',
+            //         "params"=> "{}",
+            //         "por"=> "No card image"
+            // ];
 
             $otaUserName = config('services.ota.username');
             $otaPassword = config('services.ota.password');
@@ -58,9 +58,9 @@ class OtaApiService
 
     public function setPNN($msisdn) {
         try {
-            return [
-                    'transaction_id' => "123456782"
-                ];
+            // return [
+            //         'transaction_id' => "123456782"
+            //     ];
 
             // return [
             //         "result" => '404',
@@ -107,13 +107,13 @@ class OtaApiService
 
     public function getTransactionStatus($transactionId) {
         try {
-            return [
-                    "por" => "029000005539ffffffffffffffffffffffffffff - POR OK",
-                    "params" => [
-                        "spn" => "U9"
-                    ],
-                    "result" => 200
-                ];
+            // return [
+            //         "por" => "029000005539ffffffffffffffffffffffffffff - POR OK",
+            //         "params" => [
+            //             "spn" => "U9"
+            //         ],
+            //         "result" => 200
+            //     ];
 
             $otaUserName = config('services.ota.username');
             $otaPassword = config('services.ota.password');

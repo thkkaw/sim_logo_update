@@ -6,13 +6,12 @@ use App\Models\SimLogoTransaction;
 use App\Services\OtaApiService;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 class RetryPendingSimLogo extends Command
 {
 
-    public $remark = [];
+    public array $remark = [];
 
     /**
      * The name and signature of the console command.
@@ -54,7 +53,7 @@ class RetryPendingSimLogo extends Command
                     'status' => '404',
                 ]);
             }
-            
+
             if (($txn->count + 1) == config('services.ota.try_count')) {
 
                 Log::info($simLogoTransaction->count.','.config('services.ota.try_count'));
