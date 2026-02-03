@@ -81,11 +81,11 @@ class RetryPendingSimLogo extends Command
         }
     }
 
-    public function requestSPN(string $msisdn, SimLogoTransaction $transaction, $otaApiService): bool
+    public function requestSPN(string $msisdn, SimLogoTransaction $transaction, $otaApiService)
     {
         $response = $otaApiService->setSPN($msisdn);
 
-        if (!empty($response['transaction_id'])) {
+        if (isset($response['transaction_id'])) {
             $transaction->update([
                 'transaction_spn' => $response['transaction_id'],
             ]);
@@ -115,11 +115,11 @@ class RetryPendingSimLogo extends Command
         }
     }
 
-    public function requestPNN(string $msisdn, SimLogoTransaction $transaction, $otaApiService): bool
+    public function requestPNN(string $msisdn, SimLogoTransaction $transaction, $otaApiService)
     {
         $response = $otaApiService->setPNN($msisdn);
 
-        if (!empty($response['transaction_id'])) {
+        if (isset($response['transaction_id'])) {
             $transaction->update([
                 'transaction_pnn' => $response['transaction_id'],
             ]);

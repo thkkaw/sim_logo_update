@@ -52,7 +52,7 @@ class OtaApiService
         } catch (\Throwable $e) {
 
             Log::channel('api')->info('API Response For SPN change request failed with Connection timed out : ' . $e->getMessage() . $msisdn);
-            throw $e;
+            return false;
         }
     }
 
@@ -101,7 +101,7 @@ class OtaApiService
         } catch (\Throwable $e) {
 
             Log::channel('api')->info('API Response For PNN change request failed with Connection timed out : ' . $e->getMessage() . $msisdn);
-            throw $e;
+            return false;
         }
     }
 
@@ -139,7 +139,7 @@ class OtaApiService
         } catch (\Throwable $e) {
 
             Log::channel('api')->info('API Response For Transaction Status request failed with Connection timed out : ' . $e->getMessage() . $transactionId);
-            throw $e;
+            return false;
         }
     }
 }

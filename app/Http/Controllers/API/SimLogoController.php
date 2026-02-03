@@ -84,34 +84,34 @@ class SimLogoController extends Controller
             return response()->json([
                 'status' => 404,
                 'msisdn' => $msisdn,
-            ], 202);
+            ], 200);
         }
 
         if ($spnApiResult === "error"  && $pnnApiResult === "error"){
             return response()->json([
-                'status' => 'Error: No Content',
+                'status' => 'OTA API Error: No Content',
                 'msisdn' => $msisdn,
-            ], 204);
+            ], 200);
         }
 
         return response()->json([
             'status' => 'processing',
             'msisdn' => $msisdn,
-        ], 202);
+        ], 200);
     }
 
-    public function requestSPN(string $msisdn, SimLogoTransaction $transaction): bool
+    public function requestSPN(string $msisdn, SimLogoTransaction $transaction)
     {
         $response = $this->otaApiService->setSPN($msisdn);
 
-        if (!empty($response['transaction_id'])) {
+        if (isset($response['transaction_id'])) {
             $transaction->update([
                 'transaction_spn' => $response['transaction_id'],
             ]);
 
             return true;
 
-        } elseif ($response['result'] == '404') {
+        } elseif (isset($response['result']) && $response['result'] === '404') {
             $remark = [];
 
             if (!empty($transaction->remark)) {
@@ -135,18 +135,18 @@ class SimLogoController extends Controller
 
     }
 
-    public function requestPNN(string $msisdn, SimLogoTransaction $transaction): bool
+    public function requestPNN(string $msisdn, SimLogoTransaction $transaction)
     {
         $response = $this->otaApiService->setPNN($msisdn);
 
-        if (!empty($response['transaction_id'])) {
+        if (isset($response['transaction_id'])) {
             $transaction->update([
                 'transaction_pnn' => $response['transaction_id'],
             ]);
 
             return true;
 
-        } elseif ($response['result'] == '404') {
+        } elseif (isset($response['result']) && $response['result'] === '404') {
             $remark = [];
 
             if (!empty($transaction->remark)) {
