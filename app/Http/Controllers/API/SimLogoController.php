@@ -66,8 +66,6 @@ class SimLogoController extends Controller
                     'status' => 'pending'
                 ]);
             }
-
-
         } else {
             $simLogoTransaction = SimLogoTransaction::create([
                 'msisdn' => $msisdn,
@@ -79,22 +77,27 @@ class SimLogoController extends Controller
 
         if (!$spnApiResult && !$pnnApiResult) {
 
-                $simLogoTransaction->update([
-                    'status' => '404'
-                ]);
+            $simLogoTransaction->update([
+                'status' => '404'
+            ]);
 
-                return response()->json([
-                    'status' => 404,
-                    'msisdn' => $msisdn,
-                ], 202);
-
-            } else {
-                return response()->json([
-                    'status' => 'processing',
-                    'msisdn' => $msisdn,
-                ], 202);
+            return response()->json([
+                'status' => 404,
+                'msisdn' => $msisdn,
+            ], 202);
         }
 
+        if ($spnApiResult === "error"  && $pnnApiResult === "error"){
+            return response()->json([
+                'status' => 'Error: No Content',
+                'msisdn' => $msisdn,
+            ], 204);
+        }
+
+        return response()->json([
+            'status' => 'processing',
+            'msisdn' => $msisdn,
+        ], 202);
     }
 
     public function requestSPN(string $msisdn, SimLogoTransaction $transaction): bool
@@ -105,10 +108,10 @@ class SimLogoController extends Controller
             $transaction->update([
                 'transaction_spn' => $response['transaction_id'],
             ]);
-        }
 
-        if (($response['result'] ?? null) === '404') {
+            return true;
 
+        } elseif ($response['result'] == '404') {
             $remark = [];
 
             if (!empty($transaction->remark)) {
@@ -116,17 +119,20 @@ class SimLogoController extends Controller
             }
 
             $remark[] = [
-                'SPN', Carbon::now()->toDateTimeString(), '404 Not Found',
+                'SPN',
+                Carbon::now()->toDateTimeString(),
+                'No card image',
             ];
 
             $transaction->update([
                 'remark' => json_encode(array_values($remark)),
             ]);
-
             return false;
+
+        } else {
+            return "error";
         }
 
-        return true;
     }
 
     public function requestPNN(string $msisdn, SimLogoTransaction $transaction): bool
@@ -137,10 +143,10 @@ class SimLogoController extends Controller
             $transaction->update([
                 'transaction_pnn' => $response['transaction_id'],
             ]);
-        }
 
-        if (($response['result'] ?? null) === '404') {
+            return true;
 
+        } elseif ($response['result'] == '404') {
             $remark = [];
 
             if (!empty($transaction->remark)) {
@@ -148,17 +154,19 @@ class SimLogoController extends Controller
             }
 
             $remark[] = [
-                'PNN', Carbon::now()->toDateTimeString(), '404 Not Found',
+                'PNN',
+                Carbon::now()->toDateTimeString(),
+                'No card image',
             ];
 
             $transaction->update([
                 'remark' => json_encode(array_values($remark)),
             ]);
-
             return false;
-        }
 
-        return true;
+        } else {
+            return "error";
+        }
     }
 
     // public function index(Request $request)

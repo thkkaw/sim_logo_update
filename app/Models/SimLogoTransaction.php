@@ -13,6 +13,7 @@ class SimLogoTransaction extends Model
         'transaction_id',
         'transaction_spn',
         'transaction_pnn',
+        'spn_pnn',
         'count',
         'status',
         'remark',

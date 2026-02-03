@@ -46,7 +46,8 @@ class CheckSimStatus extends Command
 
                 if ($transactionSpnStatus["params"]["spn"] === 'U9') {
                     $txn->update([
-                        'status' => 'success'
+                        'status' => 'success',
+                        'spn_pnn' => 'SPN'
                     ]);
                 }
             }
@@ -59,7 +60,8 @@ class CheckSimStatus extends Command
 
                 if ($transactionPnnStatus["params"]["pnn"] === 'U9') {
                     $txn->update([
-                        'status' => 'success'
+                        'status' => 'success',
+                        'spn_pnn' => 'PNN'
                     ]);
                 }
             }

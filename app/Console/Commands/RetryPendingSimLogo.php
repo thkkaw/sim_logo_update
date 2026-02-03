@@ -56,7 +56,7 @@ class RetryPendingSimLogo extends Command
 
             if (($txn->count + 1) == config('services.ota.try_count')) {
 
-                Log::info($simLogoTransaction->count.','.config('services.ota.try_count'));
+                // Log::info($simLogoTransaction->count . ',' . config('services.ota.try_count'));
                 $remark = [];
 
                 if (!empty($simLogoTransaction->remark)) {
@@ -64,7 +64,8 @@ class RetryPendingSimLogo extends Command
                 }
 
                 $remark[] = [
-                    Carbon::now()->toDateTimeString(), 'Try count has reached its limit.',
+                    Carbon::now()->toDateTimeString(),
+                    'Try count has reached its limit.',
                 ];
 
                 $simLogoTransaction->update([
@@ -72,9 +73,9 @@ class RetryPendingSimLogo extends Command
                     'status' => 'fail',
                     'remark' => json_encode(array_values($remark)),
                 ]);
-            }else{
+            } else {
                 $simLogoTransaction->update([
-                    'count' => $txn->count + 1 ,
+                    'count' => $txn->count + 1,
                 ]);
             }
         }
@@ -88,10 +89,10 @@ class RetryPendingSimLogo extends Command
             $transaction->update([
                 'transaction_spn' => $response['transaction_id'],
             ]);
-        }
 
-        if (($response['result'] ?? null) === '404') {
+            return true;
 
+        } elseif ($response['result'] === '404') {
             $remark = [];
 
             if (!empty($transaction->remark)) {
@@ -99,17 +100,19 @@ class RetryPendingSimLogo extends Command
             }
 
             $remark[] = [
-                'SPN', Carbon::now()->toDateTimeString(), '404 Not Found',
+                'SPN',
+                Carbon::now()->toDateTimeString(),
+                'No card image',
             ];
 
             $transaction->update([
                 'remark' => json_encode(array_values($remark)),
             ]);
-
             return false;
-        }
 
-        return true;
+        } else {
+            return "error";
+        }
     }
 
     public function requestPNN(string $msisdn, SimLogoTransaction $transaction, $otaApiService): bool
@@ -120,10 +123,10 @@ class RetryPendingSimLogo extends Command
             $transaction->update([
                 'transaction_pnn' => $response['transaction_id'],
             ]);
-        }
 
-        if (($response['result'] ?? null) === '404') {
+            return true;
 
+        } elseif ($response['result'] === '404') {
             $remark = [];
 
             if (!empty($transaction->remark)) {
@@ -131,16 +134,18 @@ class RetryPendingSimLogo extends Command
             }
 
             $remark[] = [
-                'PNN', Carbon::now()->toDateTimeString(), '404 Not Found',
+                'PNN',
+                Carbon::now()->toDateTimeString(),
+                'No card image',
             ];
 
             $transaction->update([
                 'remark' => json_encode(array_values($remark)),
             ]);
-
             return false;
-        }
 
-        return true;
+        } else {
+            return "error";
+        }
     }
 }
