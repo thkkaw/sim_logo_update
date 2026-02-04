@@ -1,0 +1,35 @@
+services:
+  simlogo_app:
+          #build: .
+    image: sim-logo-update-simlogo_app:latest
+    container_name: simlogo_app
+    environment:
+      - TZ=Asia/Rangoon
+    restart: always
+    working_dir: /var/www/
+    volumes:
+      - ./:/var/www/
+      - ./docker/config/php.ini:/usr/local/etc/php/php.ini
+    networks:
+      - main
+
+  simlogo_nginx:
+    image: nginx:alpine
+    container_name: simlogo_nginx
+    environment:
+      - TZ=Asia/Rangoon
+    restart: unless-stopped
+    ports:
+      - 5555:80
+    volumes:
+      - ./:/var/www/      
+      - ./docker/nginx:/etc/nginx/conf.d/
+      - ./docker/nginx/log:/var/log/nginx/
+    depends_on:
+      - simlogo_app
+    networks:
+      - main
+
+networks:
+  main:
+    external: true
