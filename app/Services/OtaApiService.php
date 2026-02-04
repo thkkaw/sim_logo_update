@@ -21,39 +21,58 @@ class OtaApiService
             $otaUserName = config('services.ota.username');
             $otaPassword = config('services.ota.password');
 
-            $parameters = '{
-                "command": "SET_SPN",
-                "msisdn": ' . $msisdn . ',
-                "params":{"home":"1","roaming":"1","spn":"U9"},
-                "por":"1",
-                "refresh":"1"
-            }';
+            $parameters = $parameters = [
+                "command" => "SET_SPN",
+                "msisdn"  => $msisdn,
+                "params"  => [
+                    "home"    => "1",
+                    "roaming" => "1",
+                    "spn"     => "U9",
+                ],
+                "por"     => "1",
+                "refresh" => "1",
+            ];
+
             $baseUrl = config('services.ota.url');
             $endPoint = "{$baseUrl}/send_simota_command";
 
+            $headers = [
+                'Content-Type' => 'application/json',
+                'Accept' => 'application/json',
+            ];
+
             $response = Http::withBasicAuth($otaUserName, $otaPassword)
-                ->withHeaders([
-                    'Content-Type' => 'application/json',
-                    'Accept' => 'application/json'
-                ])
+                ->withHeaders($headers)
                 ->withBody($parameters)
                 ->post($endPoint);
 
             if ($response->successful()) {
+                Log::channel('api')->info(
+                    'API Response For SPN change : ' . json_encode($response->json()) . ' of ' . $msisdn
+                );
 
-                Log::channel('api')->info('API Response For SPN change : ' . json_encode($response->json()) . ' of ' . $msisdn);
                 return $response->json();
             }
 
             if ($response->serverError()) {
-                Log::channel('api')->info('API Response For SPN change failed with status : '. json_encode($response->status()) . ', body :' . json_encode($response->body()) . ' for MSISDN : ' . $msisdn);
+                Log::channel('api')->error(
+                    'API Response For SPN change failed with status : ' .
+                    $response->status() .
+                    ', body : ' . $response->body() .
+                    ' for MSISDN : ' . $msisdn
+                );
             }
 
             return $response->json();
 
         } catch (\Throwable $e) {
 
-            Log::channel('api')->info('API Response For SPN change request failed with Connection timed out : ' . $e->getMessage() . ' for MSISDN : ' . $msisdn);
+            Log::channel('api')->error(
+                'API Response For SPN change request failed : ' .
+                $e->getMessage() .
+                ' for MSISDN : ' . $msisdn
+            );
+
             return false;
         }
     }
@@ -72,33 +91,44 @@ class OtaApiService
 
             $otaUserName = config('services.ota.username');
             $otaPassword = config('services.ota.password');
-            $parameters = '{
-                "command": "SET_PNN",
-                "msisdn": ' . $msisdn . ',
-                "params":{
-                    "index":"1",
-                    "name":"U9"
-                }
-            }';
+
+            $parameters = [
+                "command" => "SET_PNN",
+                "msisdn"  => $msisdn,
+                "params"  => [
+                    "index" => "1",
+                    "name"  => "U9",
+                ],
+            ];
+
             $baseUrl = config('services.ota.url');
             $endPoint = "{$baseUrl}/send_simota_command";
 
+            $headers = [
+                'Content-Type' => 'application/json',
+                'Accept' => 'application/json',
+            ];
+
             $response = Http::withBasicAuth($otaUserName, $otaPassword)
-                ->withHeaders([
-                    'Content-Type' => 'application/json',
-                    'Accept' => 'application/json'
-                ])
+                ->withHeaders($headers)
                 ->withBody($parameters)
                 ->post($endPoint);
 
             if ($response->successful()) {
+                Log::channel('api')->info(
+                    'API Response For PNN change : ' . json_encode($response->json()) . ' of ' . $msisdn
+                );
 
-                Log::channel('api')->info('API Response For PNN change : ' . json_encode($response->json()) . ' of ' . $msisdn);
                 return $response->json();
             }
 
             if ($response->serverError()) {
-                Log::channel('api')->info('API Response For PNN change failed with status : '. json_encode($response->status()) . ', body :' . json_encode($response->body()) . ' for MSISDN : ' . $msisdn);
+                Log::channel('api')->error(
+                    'API Response For PNN change failed with status : ' .
+                    $response->status() .
+                    ', body : ' . $response->body() .
+                    ' for MSISDN : ' . $msisdn
+                );
             }
 
             // Log::channel('api')->info('API Response For PNN change failed with status : ' . $response->status() . ' for MSISDN : ' . $msisdn);
@@ -107,7 +137,12 @@ class OtaApiService
 
         } catch (\Throwable $e) {
 
-            Log::channel('api')->info('API Response For PNN change request failed with Connection timed out : ' . $e->getMessage() . ' for MSISDN : ' . $msisdn);
+            Log::channel('api')->error(
+                'API Response For PNN change request failed : ' .
+                $e->getMessage() .
+                ' for MSISDN : ' . $msisdn
+            );
+
             return false;
         }
     }
@@ -124,32 +159,56 @@ class OtaApiService
 
             $otaUserName = config('services.ota.username');
             $otaPassword = config('services.ota.password');
+            
             $baseUrl = config('services.ota.url');
             $endPoint = "{$baseUrl}/transaction_status/{$transactionId}";
 
+            $headers = [
+                'Content-Type' => 'application/json',
+                'Accept' => 'application/json',
+            ];
+
+            Log::channel('api')->debug('Request Headers: ' . json_encode($headers));
+
+            Log::channel('api')->debug('Request URL: ' . $endPoint);
+
             $response = Http::withBasicAuth($otaUserName, $otaPassword)
-                ->withHeaders([
-                    'Content-Type' => 'application/json',
-                    'Accept' => 'application/json'
-                ])
-                ->post($endPoint);
+                ->withHeaders($headers)
+                ->post($endPoint, []);
 
-            if ($response->successful()) {
+            Log::channel('api')->debug('Response Status: ' . $response->status());
+            Log::channel('api')->debug('Response Headers: ' . json_encode($response->headers()));
+            Log::channel('api')->debug('Response Body: ' . $response->body());
 
-                Log::channel('api')->info('API Response For Transaction Status : ' . json_encode($response->json()) . ' of ' . $transactionId);
+           if ($response->successful()) {
+                Log::channel('api')->info(
+                    'API Response For Transaction Status : ' . json_encode($response->json()) . ' of ' . $transactionId
+                );
                 return $response->json();
             }
 
             if ($response->serverError()) {
-                Log::channel('api')->info('API Response For Transaction Status : '. json_encode($response->status()) . ', body :' . json_encode($response->body()) . ' of : ' . $transactionId);
+                Log::channel('api')->error(
+                    'API Response For Transaction Status : ' . $response->status() .
+                    ', body : ' . $response->body() .
+                    ' of : ' . $transactionId
+                );
             }
 
-            Log::channel('api')->info('API Response For Transaction Status failed with status : ' . $response->status() . $transactionId);
+            Log::channel('api')->info(
+                'API Response For Transaction Status failed with status : ' .
+                $response->status() . ' for transaction ID : ' . $transactionId
+            );
+
             return $response->json();
 
         } catch (\Throwable $e) {
 
-            Log::channel('api')->info('API Response For Transaction Status request failed with Connection timed out : ' . $e->getMessage() . $transactionId);
+            Log::channel('api')->error(
+                'API Response For Transaction Status request failed : ' .
+                $e->getMessage() . ' for transaction ID : ' . $transactionId
+            );
+
             return false;
         }
     }

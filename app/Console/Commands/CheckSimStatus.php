@@ -54,7 +54,6 @@ class CheckSimStatus extends Command
                 }
             }
 
-
             if (isset($txn->transaction_pnn)) {
                 $transactionPnnStatus = $otaApiService->getTransactionStatus($txn->transaction_pnn);
 
