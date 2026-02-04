@@ -38,33 +38,39 @@ class CheckSimStatus extends Command
 
         foreach ($transactions as $txn) {
 
-            $transactionSpnStatus = $otaApiService->getTransactionStatus($txn->transaction_spn);
+            if (isset($txn->transaction_spn)) {
+                $transactionSpnStatus = $otaApiService->getTransactionStatus($txn->transaction_spn);
 
-            if (isset($transactionSpnStatus) && isset($transactionSpnStatus["params"]["spn"])) {
+                if (isset($transactionSpnStatus) && isset($transactionSpnStatus["params"]["spn"])) {
 
-                Log::channel('api')->info("SPN for transaction: {$txn->transaction_spn}");
+                    Log::channel('api')->info("SPN for transaction: {$txn->transaction_spn}");
 
-                if ($transactionSpnStatus["params"]["spn"] === 'U9') {
-                    $txn->update([
-                        'status' => 'success',
-                        'spn_pnn' => 'SPN'
-                    ]);
+                    if ($transactionSpnStatus["params"]["spn"] === 'U9') {
+                        $txn->update([
+                            'status' => 'success',
+                            'spn_pnn' => 'SPN'
+                        ]);
+                    }
                 }
             }
 
-            $transactionPnnStatus = $otaApiService->getTransactionStatus($txn->transaction_pnn);
 
-            if (isset($transactionPnnStatus) && isset($transactionPnnStatus["params"]["pnn"])) {
+            if (isset($txn->transaction_pnn)) {
+                $transactionPnnStatus = $otaApiService->getTransactionStatus($txn->transaction_pnn);
 
-                Log::channel('api')->info("PNN for transaction: {$txn->transaction_pnn}");
+                if (isset($transactionPnnStatus) && isset($transactionPnnStatus["params"]["pnn"])) {
 
-                if ($transactionPnnStatus["params"]["pnn"] === 'U9') {
-                    $txn->update([
-                        'status' => 'success',
-                        'spn_pnn' => 'PNN'
-                    ]);
+                    Log::channel('api')->info("PNN for transaction: {$txn->transaction_pnn}");
+
+                    if ($transactionPnnStatus["params"]["pnn"] === 'U9') {
+                        $txn->update([
+                            'status' => 'success',
+                            'spn_pnn' => 'PNN'
+                        ]);
+                    }
                 }
             }
+
         }
     }
 }
