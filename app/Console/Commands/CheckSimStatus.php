@@ -32,6 +32,8 @@ class CheckSimStatus extends Command
         $startWindow = Carbon::now()->subHours(2);
         $endWindow = Carbon::now()->subHour();
 
+        Log::channel('api')->info("SPN for transaction: {$startWindow} {$endWindow}");
+
         $transactions = SimLogoTransaction::where('status', 'pending')
             ->whereBetween('updated_at', [$startWindow, $endWindow])
             ->get();
