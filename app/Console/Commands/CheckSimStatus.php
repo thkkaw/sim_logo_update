@@ -63,11 +63,9 @@ class CheckSimStatus extends Command
             if ($txn->transaction_pnn != null) {
                 $transactionPnnStatus = $otaApiService->getTransactionStatus($txn->transaction_pnn);
 
-                if (isset($transactionPnnStatus) && isset($transactionPnnStatus["params"])) {
+                if (isset($transactionPnnStatus) && isset($transactionPnnStatus["params"])) {                    
 
-                    
-
-                    $params = json_decode($response['params'], true);
+                    $params = json_decode($transactionPnnStatus['params'], true);
 
                     $name = $params['pnn']['name'];
 
