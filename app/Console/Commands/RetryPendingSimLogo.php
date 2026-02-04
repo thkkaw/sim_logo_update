@@ -92,7 +92,7 @@ class RetryPendingSimLogo extends Command
 
             return true;
 
-        } elseif ($response['result'] === '404') {
+        } elseif (isset($response['result']) && $response['result'] === '404') {
             $remark = [];
 
             if (!empty($transaction->remark)) {
@@ -126,7 +126,7 @@ class RetryPendingSimLogo extends Command
 
             return true;
 
-        } elseif ($response['result'] === '404') {
+        } elseif (isset($response['result']) && $response['result'] === '404') {
             $remark = [];
 
             if (!empty($transaction->remark)) {
