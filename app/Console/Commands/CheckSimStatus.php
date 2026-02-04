@@ -38,7 +38,7 @@ class CheckSimStatus extends Command
 
         foreach ($transactions as $txn) {
 
-            if (isset($txn->transaction_spn)) {
+            if ($txn->transaction_spn != null) {
                 $transactionSpnStatus = $otaApiService->getTransactionStatus($txn->transaction_spn);
 
                 if (isset($transactionSpnStatus) && isset($transactionSpnStatus["params"]["spn"])) {
@@ -54,7 +54,7 @@ class CheckSimStatus extends Command
                 }
             }
 
-            if (isset($txn->transaction_pnn)) {
+            if ($txn->transaction_pnn != null) {
                 $transactionPnnStatus = $otaApiService->getTransactionStatus($txn->transaction_pnn);
 
                 if (isset($transactionPnnStatus) && isset($transactionPnnStatus["params"]["pnn"])) {
