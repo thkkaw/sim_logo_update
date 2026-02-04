@@ -43,8 +43,7 @@ class OtaApiService
 
             $response = Http::withBasicAuth($otaUserName, $otaPassword)
                 ->withHeaders($headers)
-                ->withBody($parameters)
-                ->post($endPoint);
+                ->post($endPoint, $parameters);
 
             if ($response->successful()) {
                 Log::channel('api')->info(
@@ -111,8 +110,7 @@ class OtaApiService
 
             $response = Http::withBasicAuth($otaUserName, $otaPassword)
                 ->withHeaders($headers)
-                ->withBody($parameters)
-                ->post($endPoint);
+                ->post($endPoint, $parameters);
 
             if ($response->successful()) {
                 Log::channel('api')->info(
