@@ -165,7 +165,6 @@ class OtaApiService
 
             $headers = [
                 'Content-Type' => 'application/json',
-                'Accept' => 'application/json',
             ];
 
             Log::channel('api')->debug('Request Headers: ' . json_encode($headers));
