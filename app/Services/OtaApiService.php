@@ -45,13 +45,15 @@ class OtaApiService
                 return $response->json();
             }
 
-            Log::channel('api')->info('API Response For SPN change failed with status : ' . $response->status() . $msisdn);
+            if ($response->serverError()) {
+                Log::channel('api')->info('API Response For SPN change failed with status : '. json_encode($response->status()) . ', body :' . json_encode($response->body()) . ' for MSISDN : ' . $msisdn);
+            }
 
             return $response->json();
 
         } catch (\Throwable $e) {
 
-            Log::channel('api')->info('API Response For SPN change request failed with Connection timed out : ' . $e->getMessage() . $msisdn);
+            Log::channel('api')->info('API Response For SPN change request failed with Connection timed out : ' . $e->getMessage() . ' for MSISDN : ' . $msisdn);
             return false;
         }
     }
@@ -95,12 +97,17 @@ class OtaApiService
                 return $response->json();
             }
 
-            Log::channel('api')->info('API Response For PNN change failed with status : ' . $response->status() . $msisdn);
+            if ($response->serverError()) {
+                Log::channel('api')->info('API Response For PNN change failed with status : '. json_encode($response->status()) . ', body :' . json_encode($response->body()) . ' for MSISDN : ' . $msisdn);
+            }
+
+            // Log::channel('api')->info('API Response For PNN change failed with status : ' . $response->status() . ' for MSISDN : ' . $msisdn);
+
             return $response->json();
 
         } catch (\Throwable $e) {
 
-            Log::channel('api')->info('API Response For PNN change request failed with Connection timed out : ' . $e->getMessage() . $msisdn);
+            Log::channel('api')->info('API Response For PNN change request failed with Connection timed out : ' . $e->getMessage() . ' for MSISDN : ' . $msisdn);
             return false;
         }
     }
@@ -131,6 +138,10 @@ class OtaApiService
 
                 Log::channel('api')->info('API Response For Transaction Status : ' . json_encode($response->json()) . ' of ' . $transactionId);
                 return $response->json();
+            }
+
+            if ($response->serverError()) {
+                Log::channel('api')->info('API Response For Transaction Status : '. json_encode($response->status()) . ', body :' . json_encode($response->body()) . ' of : ' . $transactionId);
             }
 
             Log::channel('api')->info('API Response For Transaction Status failed with status : ' . $response->status() . $transactionId);
