@@ -92,22 +92,26 @@ class RetryPendingSimLogo extends Command
 
             return true;
 
-        } elseif (isset($response['result']) && $response['result'] === '404') {
-            $remark = [];
+        } elseif (isset($response['result'])) {
 
-            if (!empty($transaction->remark)) {
-                $remark = json_decode($transaction->remark, true);
+            if ($response['result'] == '404') {
+                $remark = [];
+
+                if (!empty($transaction->remark)) {
+                    $remark = json_decode($transaction->remark, true);
+                }
+
+                $remark[] = [
+                    'SPN',
+                    Carbon::now()->toDateTimeString(),
+                    'No card image',
+                ];
+
+                $transaction->update([
+                    'remark' => json_encode(array_values($remark)),
+                ]);
             }
 
-            $remark[] = [
-                'SPN',
-                Carbon::now()->toDateTimeString(),
-                'No card image',
-            ];
-
-            $transaction->update([
-                'remark' => json_encode(array_values($remark)),
-            ]);
             return false;
 
         } else {
@@ -126,22 +130,27 @@ class RetryPendingSimLogo extends Command
 
             return true;
 
-        } elseif (isset($response['result']) && $response['result'] === '404') {
-            $remark = [];
+        } elseif (isset($response['result'])) {
 
-            if (!empty($transaction->remark)) {
-                $remark = json_decode($transaction->remark, true);
+            if ($response['result'] == '404') {
+                $remark = [];
+
+                if (!empty($transaction->remark)) {
+                    $remark = json_decode($transaction->remark, true);
+                }
+
+                $remark[] = [
+                    'PNN',
+                    Carbon::now()->toDateTimeString(),
+                    'No card image',
+                ];
+
+                $transaction->update([
+                    'remark' => json_encode(array_values($remark)),
+                ]);
+
             }
 
-            $remark[] = [
-                'PNN',
-                Carbon::now()->toDateTimeString(),
-                'No card image',
-            ];
-
-            $transaction->update([
-                'remark' => json_encode(array_values($remark)),
-            ]);
             return false;
 
         } else {
