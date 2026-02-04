@@ -45,11 +45,13 @@ class CheckSimStatus extends Command
             if ($txn->transaction_spn != null) {
                 $transactionSpnStatus = $otaApiService->getTransactionStatus($txn->transaction_spn);
 
-                if (isset($transactionSpnStatus) && isset($transactionSpnStatus["params"]["spn"])) {
+                if (isset($transactionSpnStatus) && isset($transactionSpnStatus["params"])) {
 
                     Log::channel('api')->info("SPN for transaction: {$txn->transaction_spn}");
 
-                    if ($transactionSpnStatus["params"]["spn"] === 'U9') {
+                    $params = json_decode($transactionSpnStatus["params"], true);
+
+                    if ($params['spn'] === 'U9') {
                         $txn->update([
                             'status' => 'success',
                             'spn_pnn' => 'SPN'
@@ -61,11 +63,15 @@ class CheckSimStatus extends Command
             if ($txn->transaction_pnn != null) {
                 $transactionPnnStatus = $otaApiService->getTransactionStatus($txn->transaction_pnn);
 
-                if (isset($transactionPnnStatus) && isset($transactionPnnStatus["params"]["pnn"])) {
+                if (isset($transactionPnnStatus) && isset($transactionPnnStatus["params"])) {
 
                     Log::channel('api')->info("PNN for transaction: {$txn->transaction_pnn}");
 
-                    if ($transactionPnnStatus["params"]["pnn"] === 'U9') {
+                    $params = json_decode($response['params'], true);
+
+                    $name = $params['pnn']['name'];
+
+                    if ($name === 'U9') {
                         $txn->update([
                             'status' => 'success',
                             'spn_pnn' => 'PNN'
