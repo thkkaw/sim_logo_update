@@ -46,4 +46,4 @@ deploy_staging:
     - staging-laravel
   only:
     - staging
-  when: manual  
+  when: always  
