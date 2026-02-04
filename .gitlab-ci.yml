@@ -30,7 +30,7 @@ build-sonar:
     - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
     - if: $CI_COMMIT_BRANCH == 'master'
     - if: $CI_COMMIT_BRANCH == 'main'
-    - if: $CI_COMMIT_BRANCH == 'develop'
+    - if: $CI_COMMIT_BRANCH == 'staging'
 
   tags:
     - sonar-runner  
@@ -41,12 +41,6 @@ deploy_staging:
     - cd /data/apps/sim-logo-update
   script:
     - sudo -u appown -H sh -c 'cd /data/apps/sim-logo-update && git pull'
-   # - docker exec sourcing_portal php artisan migrate
-   # - docker exec sourcing_portal php artisan users:permissions
-   # - docker exec sourcing_portal php artisan setup:data
-          # - git config --global --add safe.directory /data/sourcing/sourcing-portal
-          # - git pull
-          #- php artisan migrate
     - echo "deployed"
   tags:
     - staging-laravel
