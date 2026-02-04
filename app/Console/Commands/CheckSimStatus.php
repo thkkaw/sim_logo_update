@@ -65,11 +65,13 @@ class CheckSimStatus extends Command
 
                 if (isset($transactionPnnStatus) && isset($transactionPnnStatus["params"])) {
 
-                    Log::channel('api')->info("PNN for transaction: {$txn->transaction_pnn}");
+                    
 
                     $params = json_decode($response['params'], true);
 
                     $name = $params['pnn']['name'];
+
+                    Log::channel('api')->info("PNN for transaction: {$params['pnn']['name']}");
 
                     if ($name === 'U9') {
                         $txn->update([
