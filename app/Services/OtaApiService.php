@@ -159,7 +159,7 @@ class OtaApiService
 
             $otaUserName = config('services.ota.username');
             $otaPassword = config('services.ota.password');
-            
+
             $baseUrl = config('services.ota.url');
             $endPoint = "{$baseUrl}/transaction_status/{$transactionId}";
 
@@ -174,7 +174,7 @@ class OtaApiService
 
             $response = Http::withBasicAuth($otaUserName, $otaPassword)
                 ->withHeaders($headers)
-                ->post($endPoint, []);
+                ->get($endPoint);
 
             Log::channel('api')->debug('Response Status: ' . $response->status());
             Log::channel('api')->debug('Response Headers: ' . json_encode($response->headers()));
