@@ -54,6 +54,13 @@ class SimLogoController extends Controller
                 ], 200);
             }
 
+            if ($simLogoTransaction->status === 'pending') {
+                return response()->json([
+                    'status' => 'pending',
+                    'msisdn' => $simLogoTransaction->msisdn,
+                ], 200);
+            }
+
             if ($simLogoTransaction->status === 'success') {
                 return response()->json([
                     'status' => 'success',
