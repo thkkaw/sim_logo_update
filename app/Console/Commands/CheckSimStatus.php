@@ -38,6 +38,8 @@ class CheckSimStatus extends Command
 
         foreach ($transactions as $txn) {
 
+            Log::channel('api')->info("SPN for transaction: {$txn->transaction_spn}");
+
             if ($txn->transaction_spn != null) {
                 $transactionSpnStatus = $otaApiService->getTransactionStatus($txn->transaction_spn);
 
