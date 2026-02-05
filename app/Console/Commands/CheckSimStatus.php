@@ -44,6 +44,8 @@ class CheckSimStatus extends Command
 
                 if (isset($txn->transaction_spn)) {
 
+                    Log::channel('api')->info("SPN for transaction: {$txn->transaction_spn}");
+
                     $transactionSpnStatus = $otaApiService->getTransactionStatus($txn->transaction_spn);
 
                     if (!empty($transactionSpnStatus)) {
@@ -74,6 +76,8 @@ class CheckSimStatus extends Command
                 }
 
                 if (isset($txn->transaction_pnn)) {
+
+                    Log::channel('api')->info("SPN for transaction: {$txn->transaction_pnn}");
 
                     $transactionPnnStatus = $otaApiService->getTransactionStatus($txn->transaction_pnn);
 
