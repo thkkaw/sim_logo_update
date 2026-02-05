@@ -16,7 +16,8 @@ return new class extends Migration
             $table->string('msisdn')->index(); // Added index for faster lookups
             $table->string('transaction_spn')->nullable();
             $table->string('transaction_pnn')->nullable();
-            $table->string('spn_pnn')->nullable();
+            $table->string('spn_flag')->nullable();
+            $table->string('pnn_flag')->nullable();
             $table->unsignedTinyInteger('count')->default(0);
             $table->enum('status', ['fail', 'success', 'pending', '404'])->default('pending');
             $table->text('remark')->nullable();
