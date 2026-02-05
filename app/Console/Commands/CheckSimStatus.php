@@ -39,12 +39,14 @@ class CheckSimStatus extends Command
         $transactions = SimLogoTransaction::where('status', 'pending')
             ->whereBetween('updated_at', [$startWindow, $endWindow])
             ->get();
+
         if ($transactions->isNotEmpty()) {
+
             foreach ($transactions as $txn) {
 
-                if (isset($txn->transaction_spn)) {
+                if (!blank($txn?->transaction_spn)) {
 
-                    Log::channel('api')->info("SPN for transaction: {$txn->transaction_spn}");
+                    Log::channel('api')->info("Start SPN for transaction : {$txn->transaction_spn}");
 
                     $transactionSpnStatus = $otaApiService->getTransactionStatus($txn->transaction_spn);
 
@@ -60,9 +62,9 @@ class CheckSimStatus extends Command
 
                                 if (!empty($params)) {
 
-                                if ($params['spn'] === 'U9') {
+                                    if ($params['spn'] === 'U9') {
                                         $txn->update([                                        
-                                            'spn' => 'SPN'
+                                            'spn_flag' => 'SPN'
                                         ]);
 
                                         $spn = true;
@@ -75,9 +77,9 @@ class CheckSimStatus extends Command
                     }
                 }
 
-                if (isset($txn->transaction_pnn)) {
+                if (!blank($txn?->transaction_pnn)) {
 
-                    Log::channel('api')->info("SPN for transaction: {$txn->transaction_pnn}");
+                    Log::channel('api')->info("Start PNN for transaction: {$txn->transaction_pnn}");
 
                     $transactionPnnStatus = $otaApiService->getTransactionStatus($txn->transaction_pnn);
 
@@ -96,7 +98,7 @@ class CheckSimStatus extends Command
                                 if ($name === 'U9') {
 
                                     $txn->update([                                   
-                                        'pnn' => 'PNN'
+                                        'pnn_flag' => 'PNN'
                                     ]);
 
                                     $pnn = true;
@@ -112,7 +114,6 @@ class CheckSimStatus extends Command
                         'status' => 'success'                   
                     ]);
                 }
-
             }
         }
     }

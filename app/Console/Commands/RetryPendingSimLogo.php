@@ -39,7 +39,9 @@ class RetryPendingSimLogo extends Command
                 Carbon::today()->endOfDay(),
             ])
             ->get();
-        if ($transactions->isNotEmpty()) {        
+
+        if ($transactions->isNotEmpty()) {     
+               
             foreach ($transactions as $txn) {
 
                 $simLogoTransaction = SimLogoTransaction::findOrFail($txn->id);
@@ -86,14 +88,14 @@ class RetryPendingSimLogo extends Command
     {
         $response = $otaApiService->setSPN($msisdn);
 
-        if (isset($response['transaction_id'])) {
+        if (!blank($response['transaction_id'] ?? null)) {
             $transaction->update([
                 'transaction_spn' => $response['transaction_id'],
             ]);
 
             return true;
 
-        } elseif (isset($response['result'])) {
+        } elseif (!blank($response['result'] ?? null)) {
 
             if ($response['result'] == '404') {
                 $remark = [];
@@ -124,14 +126,14 @@ class RetryPendingSimLogo extends Command
     {
         $response = $otaApiService->setPNN($msisdn);
 
-        if (isset($response['transaction_id'])) {
+        if (!blank($response['transaction_id'] ?? null)) {
             $transaction->update([
                 'transaction_pnn' => $response['transaction_id'],
             ]);
 
             return true;
 
-        } elseif (isset($response['result'])) {
+        } elseif (!blank($response['result'] ?? null)) {
 
             if ($response['result'] == '404') {
                 $remark = [];
