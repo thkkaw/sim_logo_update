@@ -129,7 +129,7 @@ class OtaApiService
                 );
             }
 
-            // Log::channel('api')->info('API Response For PNN change failed with status : ' . $response->status() . ' for MSISDN : ' . $msisdn);
+            Log::channel('api')->info('API Response For PNN change failed with status : ' . $response->status() . ' for MSISDN : ' . $msisdn);
 
             return $response->json();
 
@@ -164,10 +164,6 @@ class OtaApiService
             $headers = [
                 'Content-Type' => 'application/json',
             ];
-
-            Log::channel('api')->debug('Request Headers: ' . json_encode($headers));
-
-            Log::channel('api')->debug('Request URL: ' . $endPoint);
 
             $response = Http::withBasicAuth($otaUserName, $otaPassword)
                 ->withHeaders($headers)

@@ -41,39 +41,60 @@ class CheckSimStatus extends Command
         foreach ($transactions as $txn) {
 
             if (isset($txn->transaction_spn)) {
+
                 $transactionSpnStatus = $otaApiService->getTransactionStatus($txn->transaction_spn);
 
-                if (isset($transactionSpnStatus) && isset($transactionSpnStatus["params"])) {
+                if (!empty($transactionSpnStatus)) {
 
-                    Log::channel('api')->info("SPN for transaction: {$txn->transaction_spn}");
+                    if ($transactionSpnStatus['result'] == '200') {
 
-                    $params = json_decode($transactionSpnStatus["params"], true);
+                        if (array_key_exists('params', $transactionSpnStatus)) {
+                         
+                            Log::channel('api')->info("SPN for transaction: {$txn->msisdn}");
 
-                    if ($params['spn'] === 'U9') {
-                        $txn->update([
-                            'status' => 'success',
-                            'spn_pnn' => 'SPN'
-                        ]);
+                            $params = json_decode($transactionSpnStatus['params'] ?? '', true);
+
+                            if (!empty($params)) {
+
+                               if ($params['spn'] === 'U9') {
+                                    $txn->update([
+                                        'status' => 'success',
+                                        'spn_pnn' => 'SPN'
+                                    ]);
+                                } 
+                            }
+                            
+                        }
                     }
+                    
                 }
             }
 
             if (isset($txn->transaction_pnn)) {
+
                 $transactionPnnStatus = $otaApiService->getTransactionStatus($txn->transaction_pnn);
 
-                if (isset($transactionPnnStatus) && isset($transactionPnnStatus["params"])) {                    
+                if (!empty($transactionPnnStatus)) {
 
-                    $params = json_decode($transactionPnnStatus['params'], true);
+                    if ($transactionPnnStatus['result'] == '200') {
 
-                    $name = $params['pnn']['name'];
+                        if (array_key_exists('params', $transactionPnnStatus)) {                 
 
-                    Log::channel('api')->info("PNN for transaction: {$params['pnn']['name']}");
+                            $params = json_decode($transactionPnnStatus['params'], true);
 
-                    if ($name === 'U9') {
-                        $txn->update([
-                            'status' => 'success',
-                            'spn_pnn' => 'PNN'
-                        ]);
+                            $name = $params['pnn']['name'];
+
+                            Log::channel('api')->info("PNN for transaction: {{$txn->msisdn}}");
+
+                            if ($name === 'U9') {
+
+                                $txn->update([
+                                    'status' => 'success',
+                                    'spn_pnn' => 'PNN'
+                                ]);
+
+                            }
+                        }
                     }
                 }
             }
