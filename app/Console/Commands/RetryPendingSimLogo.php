@@ -39,44 +39,45 @@ class RetryPendingSimLogo extends Command
                 Carbon::today()->endOfDay(),
             ])
             ->get();
+        if ($transactions->isNotEmpty()) {        
+            foreach ($transactions as $txn) {
 
-        foreach ($transactions as $txn) {
+                $simLogoTransaction = SimLogoTransaction::findOrFail($txn->id);
 
-            $simLogoTransaction = SimLogoTransaction::findOrFail($txn->id);
+                $spnApiResult = $this->requestSPN($txn->msisdn, $txn, $otaApiService);
+                $pnnApiResult = $this->requestPNN($txn->msisdn, $txn, $otaApiService);
 
-            $spnApiResult = $this->requestSPN($txn->msisdn, $txn, $otaApiService);
-            $pnnApiResult = $this->requestPNN($txn->msisdn, $txn, $otaApiService);
+                if (!$spnApiResult && !$pnnApiResult) {
 
-            if (!$spnApiResult && !$pnnApiResult) {
-
-                $simLogoTransaction->update([
-                    'status' => '404',
-                ]);
-            }
-
-            if (($txn->count + 1) == config('services.ota.try_count')) {
-
-                // Log::info($simLogoTransaction->count . ',' . config('services.ota.try_count'));
-                $remark = [];
-
-                if (!empty($simLogoTransaction->remark)) {
-                    $remark = json_decode($simLogoTransaction->remark, true);
+                    $simLogoTransaction->update([
+                        'status' => '404',
+                    ]);
                 }
 
-                $remark[] = [
-                    Carbon::now()->toDateTimeString(),
-                    'Try count has reached its limit.',
-                ];
+                if (($txn->count + 1) == config('services.ota.try_count')) {
 
-                $simLogoTransaction->update([
-                    'count' => 0,
-                    'status' => 'fail',
-                    'remark' => json_encode(array_values($remark)),
-                ]);
-            } else {
-                $simLogoTransaction->update([
-                    'count' => $txn->count + 1,
-                ]);
+                    // Log::info($simLogoTransaction->count . ',' . config('services.ota.try_count'));
+                    $remark = [];
+
+                    if (!empty($simLogoTransaction->remark)) {
+                        $remark = json_decode($simLogoTransaction->remark, true);
+                    }
+
+                    $remark[] = [
+                        Carbon::now()->toDateTimeString(),
+                        'Try count has reached its limit.',
+                    ];
+
+                    $simLogoTransaction->update([
+                        'count' => 0,
+                        'status' => 'fail',
+                        'remark' => json_encode(array_values($remark)),
+                    ]);
+                } else {
+                    $simLogoTransaction->update([
+                        'count' => $txn->count + 1,
+                    ]);
+                }
             }
         }
     }
