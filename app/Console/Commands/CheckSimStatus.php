@@ -31,6 +31,8 @@ class CheckSimStatus extends Command
     {
         $startWindow = Carbon::now()->subHours(2);
         $endWindow = Carbon::now()->subHour();
+        $spn = false;
+        $pnn = false;
 
         Log::channel('api')->info("SPN for transaction: {$startWindow} {$endWindow}");
 
@@ -57,10 +59,11 @@ class CheckSimStatus extends Command
                             if (!empty($params)) {
 
                                if ($params['spn'] === 'U9') {
-                                    $txn->update([
-                                        'status' => 'success',
-                                        'spn_pnn' => 'SPN'
+                                    $txn->update([                                        
+                                        'spn' => 'SPN'
                                     ]);
+
+                                    $spn = true;
                                 } 
                             }
                             
@@ -88,15 +91,22 @@ class CheckSimStatus extends Command
 
                             if ($name === 'U9') {
 
-                                $txn->update([
-                                    'status' => 'success',
-                                    'spn_pnn' => 'PNN'
+                                $txn->update([                                   
+                                    'pnn' => 'PNN'
                                 ]);
+
+                                $pnn = true;
 
                             }
                         }
                     }
                 }
+            }
+
+            if($spn && $pnn){
+                $txn->update([
+                    'status' => 'success'                   
+                ]);
             }
 
         }
