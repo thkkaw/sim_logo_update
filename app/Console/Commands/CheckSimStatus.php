@@ -63,10 +63,11 @@ class CheckSimStatus extends Command
                     ]);
 
                     if (!empty($params)) {
+                        $name = $params['spn'];
 
-                        if ($params['spn'] === 'U9') {
+                        if ($name === 'U9') {
                             $txn->update([
-                                'spn_flag' => 'SPN'
+                                'spn_flag' => $name
                             ]);
 
                             $spn = true;
@@ -97,18 +98,21 @@ class CheckSimStatus extends Command
                         'params' => $params,
                     ]);
 
-                    $name = $params['pnn']['name'];
+                    if (!empty($params)) {
+                        $name = $params['pnn']['name'];
 
-                    if ($name === 'U9') {
+                        if ($name === 'U9') {
 
-                        $txn->update([
-                            'pnn_flag' => 'PNN'
-                        ]);
+                            $txn->update([
+                                'pnn_flag' => $name
+                            ]);
 
-                        $pnn = true;
+                            $pnn = true;
 
-                        Log::channel('api')->info("PNN flag set!");
+                            Log::channel('api')->info("PNN flag set!");
+                        }
                     }
+
                 }
             }
 

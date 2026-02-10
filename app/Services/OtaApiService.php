@@ -114,7 +114,7 @@ class OtaApiService
 
             if ($response->successful()) {
                 Log::channel('api')->info(
-                    'API Response For PNN change : ' . json_encode($response->json()) . ' of ' . $msisdn
+                    'API Response For PNN change ' . json_encode($response->json()) . ' of ' . $msisdn
                 );
 
                 return $response->json();
