@@ -10,4 +10,4 @@ Route::get('/user', function (Request $request) {
 })->middleware('auth:sanctum');
 
 Route::post('/simlogo', [SimLogoController::class, 'index']);
-Route::get('/report', [ReportController::class, 'download']);
+Route::get('/simlogo/report', [ReportController::class, 'download']);
