@@ -70,7 +70,6 @@ class ReportController extends Controller
 
             // CSV header
             fputcsv($handle, [
-                'ID',
                 'MSISDN',
                 'SPN Flag',
                 'PNN Flag',
@@ -87,7 +86,6 @@ class ReportController extends Controller
             $query->chunk(1000, function ($rows) use ($handle) {
                     foreach ($rows as $row) {
                         fputcsv($handle, [
-                            $row->id,
                             $row->msisdn,
                             $row->spn_flag,
                             $row->pnn_flag,
