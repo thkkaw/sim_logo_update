@@ -7,5 +7,5 @@ Schedule::command('simlogo:retry-pending')
     ->dailyAt('01:00');
 
 // 2. The Hourly Scheduler
-Schedule::command('simlogo:check-status')
-    ->hourly();
+Schedule::command('simlogo:check-status')->everyTenMinutes();
+    // ->hourly();
