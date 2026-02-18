@@ -122,16 +122,6 @@ class CheckSimStatus extends Command
                 }
             }
 
-            // if ($txn->spn_flag === 'U9' || $txn->pnn_flag === 'U9') {
-            //     $txn->update(['status' => 'success']);
-
-            //     Log::channel('api')->debug('Success!', [
-            //         'msisdn' => $txn->msisdn,
-            //         'spn' => $txn->transaction_spn ?? '',
-            //         'pnn' => $txn->transaction_pnn ?? '',
-            //     ]);
-            // }
-
             if ($spn && $pnn) {
                 $txn->update([
                     'status' => 'success'
