@@ -31,16 +31,16 @@ class CheckSimStatus extends Command
     {
         $startWindow = Carbon::now()->subHours(2);
         $endWindow = Carbon::now()->subHour();
-        $spn = false;
-        $pnn = false;
 
         Log::channel('api')->info("Checking status for transactions between {$startWindow} to {$endWindow}");
 
         $transactions = SimLogoTransaction::where('status', 'pending')
-            ->whereBetween('updated_at', [$startWindow, $endWindow])
-            ->get();
+        ->whereBetween('updated_at', [$startWindow, $endWindow])
+        ->get();
 
         foreach ($transactions as $txn) {
+            // $spn = false;
+            // $pnn = false;
 
             // ---------- SPN ----------
             if (!blank($txn?->transaction_spn)) {
@@ -70,7 +70,7 @@ class CheckSimStatus extends Command
                                 'spn_flag' => $name
                             ]);
 
-                            $spn = true;
+                            // $spn = true;
 
                             Log::channel('api')->debug('SPN flag set!', [
                                 'msisdn' => $txn->msisdn,
@@ -110,7 +110,7 @@ class CheckSimStatus extends Command
                                 'pnn_flag' => $name
                             ]);
 
-                            $pnn = true;
+                            // $pnn = true;
 
                             Log::channel('api')->debug('PNN flag set!', [
                                 'msisdn' => $txn->msisdn,
@@ -122,17 +122,27 @@ class CheckSimStatus extends Command
                 }
             }
 
-            if ($spn && $pnn) {
-                $txn->update([
-                    'status' => 'success'
-                ]);
+            if ($txn->spn_flag === 'U9' || $txn->pnn_flag === 'U9') {
+                $txn->update(['status' => 'success']);
 
-                Log::channel('api')->debug('Both flags set!', [
+                Log::channel('api')->debug('Success!', [
                     'msisdn' => $txn->msisdn,
                     'spn' => $txn->transaction_spn ?? '',
                     'pnn' => $txn->transaction_pnn ?? '',
                 ]);
             }
+
+            // if ($spn && $pnn) {
+            //     $txn->update([
+            //         'status' => 'success'
+            //     ]);
+
+            //     Log::channel('api')->debug('Both flags set!', [
+            //         'msisdn' => $txn->msisdn,
+            //         'spn' => $txn->transaction_spn ?? '',
+            //         'pnn' => $txn->transaction_pnn ?? '',
+            //     ]);
+            // }
         }
 
 
