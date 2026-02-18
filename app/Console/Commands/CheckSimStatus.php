@@ -72,7 +72,7 @@ class CheckSimStatus extends Command
 
                             $spn = true;
 
-                            Log::channel('api')->debug('SPN flag set!', [
+                            Log::channel('api')->info('SPN flag set!', [
                                 'msisdn' => $txn->msisdn,
                                 'spn' => $txn->transaction_spn,
                             ]);
@@ -112,7 +112,7 @@ class CheckSimStatus extends Command
 
                             $pnn = true;
 
-                            Log::channel('api')->debug('PNN flag set!', [
+                            Log::channel('api')->info('PNN flag set!', [
                                 'msisdn' => $txn->msisdn,
                                 'pnn' => $txn->transaction_pnn,
                             ]);
@@ -127,7 +127,7 @@ class CheckSimStatus extends Command
                     'status' => 'success'
                 ]);
 
-                Log::channel('api')->debug('Both flags set!', [
+                Log::channel('api')->info('Both flags set!', [
                     'msisdn' => $txn->msisdn,
                     'spn' => $txn->transaction_spn ?? '',
                     'pnn' => $txn->transaction_pnn ?? '',
