@@ -14,7 +14,6 @@ class SimLogoController extends Controller
 {
 
     protected OtaApiService $otaApiService;
-    public array $remark = [];
 
     public function __construct(OtaApiService $otaApiService)
     {
@@ -73,7 +72,9 @@ class SimLogoController extends Controller
                     'status' => 'pending'
                 ]);
             }
+
         } else {
+
             $simLogoTransaction = SimLogoTransaction::create([
                 'msisdn' => $msisdn,
             ]);
@@ -81,18 +82,6 @@ class SimLogoController extends Controller
 
         $spnApiResult = $this->requestSPN($msisdn, $simLogoTransaction);
         $pnnApiResult = $this->requestPNN($msisdn, $simLogoTransaction);
-
-        if (!$spnApiResult && !$pnnApiResult) {
-
-            $simLogoTransaction->update([
-                'status' => '404'
-            ]);
-
-            return response()->json([
-                'status' => 404,
-                'msisdn' => $msisdn,
-            ], 200);
-        }
 
         if ($spnApiResult === "error"  && $pnnApiResult === "error"){
             return response()->json([
@@ -119,30 +108,6 @@ class SimLogoController extends Controller
 
             return true;
 
-        } elseif (!blank($response['result'] ?? null)) {
-
-            if ($response['result'] == '404') {
-
-                $remark = [];
-
-                if (!empty($transaction->remark)) {
-                    $remark = json_decode($transaction->remark, true);
-                }
-
-                $remark[] = [
-                    'SPN',
-                    Carbon::now()->toDateTimeString(),
-                    'No card image',
-                ];
-
-                $transaction->update([
-                    'remark' => json_encode(array_values($remark)),
-                ]);
-
-            }
-
-            return false;
-
         } else {
             return "error";
         }
@@ -154,34 +119,12 @@ class SimLogoController extends Controller
         $response = $this->otaApiService->setPNN($msisdn);
 
         if (!blank($response['transaction_id'] ?? null)) {
-            
+
             $transaction->update([
                 'transaction_pnn' => $response['transaction_id'],
             ]);
 
             return true;
-
-        } elseif (!blank($response['result'] ?? null)) {
-
-            if ($response['result'] == '404') {
-                $remark = [];
-
-                if (!empty($transaction->remark)) {
-                    $remark = json_decode($transaction->remark, true);
-                }
-
-                $remark[] = [
-                    'PNN',
-                    Carbon::now()->toDateTimeString(),
-                    'No card image',
-                ];
-
-                $transaction->update([
-                    'remark' => json_encode(array_values($remark)),
-                ]);
-            }
-
-            return false;
 
         } else {
             return "error";

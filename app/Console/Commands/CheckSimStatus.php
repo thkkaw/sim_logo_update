@@ -41,6 +41,7 @@ class CheckSimStatus extends Command
         foreach ($transactions as $txn) {
             $spn = false;
             $pnn = false;
+            $remark = $txn->remark ?? [];
 
             // ---------- SPN ----------
             if (!blank($txn?->transaction_spn)) {
@@ -49,35 +50,42 @@ class CheckSimStatus extends Command
 
                 $transactionSpnStatus = $otaApiService->getTransactionStatus($txn->transaction_spn);
 
-                if (
-                    !empty($transactionSpnStatus)
-                    && $transactionSpnStatus['result'] == '200'
-                    && array_key_exists('params', $transactionSpnStatus)
-                ) {
+                if (!empty($transactionSpnStatus)) {
 
-                    $params = json_decode($transactionSpnStatus['params'] ?? '', true);
+                    if ($transactionSpnStatus['result'] == '200' && array_key_exists('params', $transactionSpnStatus)) {
 
-                    Log::channel('api')->debug('OTA Params', [
-                        'msisdn' => $txn->msisdn ?? null,
-                        'params' => $params,
-                    ]);
+                        $params = json_decode($transactionSpnStatus['params'] ?? '', true);
 
-                    if (!empty($params)) {
-                        $name = $params['spn'];
+                        Log::channel('api')->debug('OTA Params', [
+                            'msisdn' => $txn->msisdn ?? null,
+                            'params' => $params,
+                        ]);
 
-                        if ($name === 'U9') {
-                            $txn->update([
-                                'spn_flag' => $name
-                            ]);
+                        if (!empty($params)) {
+                            $name = $params['spn'];
 
-                            $spn = true;
+                            if ($name === 'U9') {
+                                $txn->update([
+                                    'spn_flag' => $name
+                                ]);
 
-                            Log::channel('api')->info('SPN flag set!', [
-                                'msisdn' => $txn->msisdn,
-                                'spn' => $txn->transaction_spn,
-                            ]);
+                                $spn = true;
+
+                                Log::channel('api')->info('SPN flag set!', [
+                                    'msisdn' => $txn->msisdn,
+                                    'spn' => $txn->transaction_spn,
+                                ]);
+                            }
                         }
                     }
+
+                    if ($transactionSpnStatus['result'] == '404') {
+                        $remark[] = [
+                            Carbon::now()->toDateTimeString(),
+                            'SPN SMS delivery failed (404).',
+                        ];
+                    }
+
                 }
             }
 
@@ -88,44 +96,52 @@ class CheckSimStatus extends Command
 
                 $transactionPnnStatus = $otaApiService->getTransactionStatus($txn->transaction_pnn);
 
-                if (
-                    !empty($transactionPnnStatus)
-                    && $transactionPnnStatus['result'] == '200'
-                    && array_key_exists('params', $transactionPnnStatus)
-                ) {
+                if (!empty($transactionPnnStatus)) {
 
-                    $params = json_decode($transactionPnnStatus['params'], true);
+                    if ($transactionPnnStatus['result'] == '200' && array_key_exists('params', $transactionPnnStatus)) {
 
-                    Log::channel('api')->debug('OTA Params', [
-                        'msisdn' => $txn->msisdn ?? null,
-                        'params' => $params,
-                    ]);
+                        $params = json_decode($transactionPnnStatus['params'], true);
 
-                    if (!empty($params)) {
-                        $name = $params['pnn']['name'];
+                        Log::channel('api')->debug('OTA Params', [
+                            'msisdn' => $txn->msisdn ?? null,
+                            'params' => $params,
+                        ]);
 
-                        if ($name === 'U9') {
+                        if (!empty($params)) {
+                            $name = $params['pnn']['name'];
 
-                            $txn->update([
-                                'pnn_flag' => $name
-                            ]);
+                            if ($name === 'U9') {
 
-                            $pnn = true;
+                                $txn->update([
+                                    'pnn_flag' => $name
+                                ]);
 
-                            Log::channel('api')->info('PNN flag set!', [
-                                'msisdn' => $txn->msisdn,
-                                'pnn' => $txn->transaction_pnn,
-                            ]);
+                                $pnn = true;
+
+                                Log::channel('api')->info('PNN flag set!', [
+                                    'msisdn' => $txn->msisdn,
+                                    'pnn' => $txn->transaction_pnn,
+                                ]);
+                            }
                         }
                     }
 
+                    if ($transactionPnnStatus['result'] == '404') {
+
+                        $remark[] = [
+                            Carbon::now()->toDateTimeString(),
+                            'PNN SMS delivery failed (404).',
+                        ];
+                    }
                 }
             }
 
+            if (!empty($remark)) {
+                $txn->update(['remark' => $remark]);
+            }
+
             if ($spn && $pnn) {
-                $txn->update([
-                    'status' => 'success'
-                ]);
+                $txn->update(['status' => 'success']);
 
                 Log::channel('api')->info('Both flags set!', [
                     'msisdn' => $txn->msisdn,
@@ -135,82 +151,6 @@ class CheckSimStatus extends Command
             }
         }
 
-
-        // if ($transactions->isNotEmpty()) {
-
-        //     foreach ($transactions as $txn) {
-
-        //         if (!blank($txn?->transaction_spn)) {
-
-        //             Log::channel('api')->info("Start SPN for transaction : {$txn->transaction_spn}");
-
-        //             $transactionSpnStatus = $otaApiService->getTransactionStatus($txn->transaction_spn);
-
-        //             if (!empty($transactionSpnStatus)) {
-
-        //                 if ($transactionSpnStatus['result'] == 200) {
-
-        //                     if (array_key_exists('params', $transactionSpnStatus)) {
-
-        //                         Log::channel('api')->info("SPN for transaction: {$txn->msisdn}");
-
-        //                         $params = json_decode($transactionSpnStatus['params'] ?? '', true);
-
-        //                         if (!empty($params)) {
-
-        //                             if ($params['spn'] === 'U9') {
-        //                                 $txn->update([
-        //                                     'spn_flag' => 'SPN'
-        //                                 ]);
-
-        //                                 $spn = true;
-        //                             }
-        //                         }
-
-        //                     }
-        //                 }
-
-        //             }
-        //         }
-
-        //         if (!blank($txn?->transaction_pnn)) {
-
-        //             Log::channel('api')->info("Start PNN for transaction: {$txn->transaction_pnn}");
-
-        //             $transactionPnnStatus = $otaApiService->getTransactionStatus($txn->transaction_pnn);
-
-        //             if (!empty($transactionPnnStatus)) {
-
-        //                 if ($transactionPnnStatus['result'] == 200) {
-
-        //                     if (array_key_exists('params', $transactionPnnStatus)) {
-
-        //                         $params = json_decode($transactionPnnStatus['params'], true);
-
-        //                         $name = $params['pnn']['name'];
-
-        //                         Log::channel('api')->info("PNN for transaction: {$txn->msisdn}");
-
-        //                         if ($name === 'U9') {
-
-        //                             $txn->update([
-        //                                 'pnn_flag' => 'PNN'
-        //                             ]);
-
-        //                             $pnn = true;
-
-        //                         }
-        //                     }
-        //                 }
-        //             }
-        //         }
-
-        //         if($spn && $pnn){
-        //             $txn->update([
-        //                 'status' => 'success'
-        //             ]);
-        //         }
-        //     }
-        // }
+        Log::channel('api')->info("Completed checking status for transactions between {$startWindow} to {$endWindow}");
     }
 }
