@@ -35,8 +35,10 @@ class CheckSimStatus extends Command
         Log::channel('api')->info("Checking status for transactions between {$startWindow} to {$endWindow}");
 
         $transactions = SimLogoTransaction::where('status', 'pending')
-        ->whereBetween('updated_at', [$startWindow, $endWindow])
-        ->get();
+                ->whereBetween('updated_at', [$startWindow, $endWindow])
+                ->get();
+
+        Log::channel('api')->info('Pending transactions found: ' . $transactions->count());
 
         foreach ($transactions as $txn) {
             $spn = false;
