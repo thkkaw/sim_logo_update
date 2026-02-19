@@ -10,9 +10,6 @@ use Illuminate\Support\Facades\Log;
 
 class RetryPendingSimLogo extends Command
 {
-
-    public array $remark = [];
-
     /**
      * The name and signature of the console command.
      *
@@ -41,6 +38,8 @@ class RetryPendingSimLogo extends Command
             ->whereDate('created_at', Carbon::yesterday())
             ->get();
 
+        Log::channel('api')->info('Pending transactions found for retry: ' . $transactions->count());
+
         if ($transactions->isNotEmpty()) {
 
             foreach ($transactions as $txn) {
@@ -53,11 +52,7 @@ class RetryPendingSimLogo extends Command
                 if (($txn->count + 1) == config('services.ota.try_count')) {
 
                     // Log::info($simLogoTransaction->count . ',' . config('services.ota.try_count'));
-                    $remark = [];
-
-                    if (!empty($simLogoTransaction->remark)) {
-                        $remark = json_decode($simLogoTransaction->remark, true);
-                    }
+                    $remark = $simLogoTransaction->remark ?? [];
 
                     $remark[] = [
                         Carbon::now()->toDateTimeString(),
@@ -67,8 +62,9 @@ class RetryPendingSimLogo extends Command
                     $simLogoTransaction->update([
                         'count' => 0,
                         'status' => 'fail',
-                        'remark' => json_encode(array_values($remark)),
+                        'remark' => $remark,
                     ]);
+
                 } else {
                     $simLogoTransaction->update([
                         'count' => $txn->count + 1,
