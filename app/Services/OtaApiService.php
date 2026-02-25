@@ -46,9 +46,6 @@ class OtaApiService
                 ->post($endPoint, $parameters);
 
             if ($response->successful()) {
-                // Log::channel('api')->info(
-                //     'API Response For SPN change : ' . json_encode($response->json()) . ' of ' . $msisdn
-                // );
 
                 Log::channel('api')->info('API Response For SPN Change', [
                     'msisdn' => $msisdn,
@@ -59,12 +56,6 @@ class OtaApiService
             }
 
             if ($response->serverError()) {
-                // Log::channel('api')->error(
-                //     'API Response For SPN change failed with status : ' .
-                //     $response->status() .
-                //     ', body : ' . $response->body() .
-                //     ' for MSISDN : ' . $msisdn
-                // );
 
                 Log::channel('api')->error('API Response For SPN change failed', [
                     'msisdn' => $msisdn,
@@ -73,11 +64,11 @@ class OtaApiService
                 ]);
             }
 
-            Log::channel('api')->info('API Response For SPN change failed', [
-                'msisdn' => $msisdn,
-                'status' => $response->status(),
-                'body' => $response->body(),
-            ]);
+            // Log::channel('api')->info('API Response For SPN change failed', [
+            //     'msisdn' => $msisdn,
+            //     'status' => $response->status(),
+            //     'body' => $response->body(),
+            // ]);
 
             return $response->json();
 
@@ -129,9 +120,7 @@ class OtaApiService
                 ->post($endPoint, $parameters);
 
             if ($response->successful()) {
-                // Log::channel('api')->info(
-                //     'API Response For PNN change ' . json_encode($response->json()) . ' of ' . $msisdn
-                // );
+
                 Log::channel('api')->info('API Response For PNN Change', [
                     'msisdn' => $msisdn,
                     'response' => $response->json(),
@@ -141,12 +130,6 @@ class OtaApiService
             }
 
             if ($response->serverError()) {
-                // Log::channel('api')->error(
-                //     'API Response For PNN change failed with status : ' .
-                //     $response->status() .
-                //     ', body : ' . $response->body() .
-                //     ' for MSISDN : ' . $msisdn
-                // );
 
                 Log::channel('api')->error('API Response For PNN change failed', [
                     'msisdn' => $msisdn,
@@ -155,11 +138,11 @@ class OtaApiService
                 ]);
             }
 
-            Log::channel('api')->info('API Response For PNN change failed', [
-                'msisdn' => $msisdn,
-                'status' => $response->status(),
-                'body' => $response->body(),
-            ]);
+            // Log::channel('api')->info('API Response For PNN change failed', [
+            //     'msisdn' => $msisdn,
+            //     'status' => $response->status(),
+            //     'body' => $response->body(),
+            // ]);
 
             return $response->json();
 
@@ -202,9 +185,7 @@ class OtaApiService
             Log::channel('api')->debug('Response Body: ' . $response->body());
 
            if ($response->successful()) {
-                // Log::channel('api')->info(
-                //     'API Response For Transaction Status : ' . json_encode($response->json()) . ' of ' . $transactionId
-                // );
+
                 Log::channel('api')->info('API Response For Transaction Status', [
                     'transaction_id' => $transactionId,
                     'response' => $response->json(),
@@ -221,11 +202,11 @@ class OtaApiService
                 ]);
             }
 
-            Log::channel('api')->info('API Response For Transaction Status failed', [
-                'transaction_id' => $transactionId,
-                'status' => $response->status(),
-                'body' => $response->body(),
-            ]);
+            // Log::channel('api')->info('API Response For Transaction Status failed', [
+            //     'transaction_id' => $transactionId,
+            //     'status' => $response->status(),
+            //     'body' => $response->body(),
+            // ]);
 
             return $response->json();
 
