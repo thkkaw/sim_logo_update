@@ -8,15 +8,6 @@ class OtaApiService
 {
     public function setSPN($msisdn) {
         try {
-            // return [
-            //         'transaction_id' => "123456781"
-            // ];
-
-            // return [
-            //         "result"=> '404',
-            //         "params"=> "{}",
-            //         "por"=> "No card image"
-            // ];
 
             $otaUserName = config('services.ota.username');
             $otaPassword = config('services.ota.password');
@@ -64,12 +55,6 @@ class OtaApiService
                 ]);
             }
 
-            // Log::channel('api')->info('API Response For SPN change failed', [
-            //     'msisdn' => $msisdn,
-            //     'status' => $response->status(),
-            //     'body' => $response->body(),
-            // ]);
-
             return $response->json();
 
         } catch (\Throwable $e) {
@@ -85,15 +70,6 @@ class OtaApiService
 
     public function setPNN($msisdn) {
         try {
-            // return [
-            //         'transaction_id' => "123456782"
-            //     ];
-
-            // return [
-            //         "result" => '404',
-            //         "params" => "{}",
-            //         "por" => "No card image"
-            // ];
 
             $otaUserName = config('services.ota.username');
             $otaPassword = config('services.ota.password');
@@ -138,12 +114,6 @@ class OtaApiService
                 ]);
             }
 
-            // Log::channel('api')->info('API Response For PNN change failed', [
-            //     'msisdn' => $msisdn,
-            //     'status' => $response->status(),
-            //     'body' => $response->body(),
-            // ]);
-
             return $response->json();
 
         } catch (\Throwable $e) {
@@ -158,13 +128,6 @@ class OtaApiService
 
     public function getTransactionStatus($transactionId) {
         try {
-            // return [
-            //         "por" => "029000005539ffffffffffffffffffffffffffff - POR OK",
-            //         "params" => [
-            //             "spn" => "U9"
-            //         ],
-            //         "result" => 200
-            //     ];
 
             $otaUserName = config('services.ota.username');
             $otaPassword = config('services.ota.password');
@@ -201,12 +164,6 @@ class OtaApiService
                     'body' => $response->body(),
                 ]);
             }
-
-            // Log::channel('api')->info('API Response For Transaction Status failed', [
-            //     'transaction_id' => $transactionId,
-            //     'status' => $response->status(),
-            //     'body' => $response->body(),
-            // ]);
 
             return $response->json();
 
