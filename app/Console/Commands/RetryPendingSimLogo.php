@@ -49,7 +49,7 @@ class RetryPendingSimLogo extends Command
                 $this->requestSPN($txn->msisdn, $txn, $otaApiService);
                 $this->requestPNN($txn->msisdn, $txn, $otaApiService);
 
-                if (($txn->count + 1) == config('services.ota.try_count')) {
+                if (($txn->count + 1) >= config('services.ota.try_count')) {
 
                     // Log::info($simLogoTransaction->count . ',' . config('services.ota.try_count'));
                     $remark = $simLogoTransaction->remark ?? [];
