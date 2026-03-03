@@ -82,10 +82,13 @@ class CheckSimStatus extends Command
                     }
 
                     if ($transactionSpnStatus['result'] == '404') {
+                        
                         $remark[] = [
                             Carbon::now()->toDateTimeString(),
                             'SPN SMS delivery failed (404).',
                         ];
+
+                        $txn->update(['status' => '404']);
                     }
 
                 }
@@ -134,6 +137,8 @@ class CheckSimStatus extends Command
                             Carbon::now()->toDateTimeString(),
                             'PNN SMS delivery failed (404).',
                         ];
+
+                        $txn->update(['status' => '404']);
                     }
                 }
             }
