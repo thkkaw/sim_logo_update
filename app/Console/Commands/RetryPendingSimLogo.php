@@ -29,13 +29,11 @@ class RetryPendingSimLogo extends Command
      */
     public function handle(OtaApiService $otaApiService)
     {
-        $targetDate = Carbon::yesterday()->toDateString();
-
-        Log::channel('api')->info("Starting retry process for date: {$targetDate}");
+        Log::channel('api')->info("Starting retry process...");
 
         $transactions = SimLogoTransaction::where('status', 'pending')
             ->where('count', '<', config('services.ota.try_count'))
-            ->whereDate('created_at', Carbon::yesterday())
+            ->whereDate('created_at', '<', Carbon::today())
             ->get();
 
         Log::channel('api')->info('Pending transactions found for retry: ' . $transactions->count());
@@ -73,7 +71,7 @@ class RetryPendingSimLogo extends Command
             }
         }
 
-        Log::channel('api')->info("Retry process completed for date: {$targetDate}");
+        Log::channel('api')->info("Retry process completed.");
     }
 
     public function requestSPN(string $msisdn, SimLogoTransaction $transaction, $otaApiService)
