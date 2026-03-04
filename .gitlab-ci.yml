@@ -1,7 +1,8 @@
 stages:
   - build-sonar
     #  - build
-  - deploy
+  - deploy-staging
+  - deploy-production
 
 image: 
   name: sonarsource/sonar-scanner-cli:11
@@ -36,7 +37,7 @@ build-sonar:
     - sonar-runner  
 
 deploy_staging:
-  stage: deploy
+  stage: deploy-staging
   before_script:
     - cd /data/apps/sim-logo-update
   script:
@@ -47,3 +48,16 @@ deploy_staging:
   only:
     - staging
   when: always  
+
+deploy_production:
+  stage: deploy-production
+  before_script:
+    - cd /omlappdata/sim-logo-update
+  script:
+    - sudo -u appown -H sh -c 'cd /omlappdata/sim-logo-update && git pull'
+    - echo "deployed"
+  tags:
+    - build
+  only:
+    - main
+  when: always 
