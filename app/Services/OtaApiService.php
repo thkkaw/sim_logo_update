@@ -12,7 +12,7 @@ class OtaApiService
             $otaUserName = config('services.ota.username');
             $otaPassword = config('services.ota.password');
 
-            $parameters = $parameters = [
+            $parameters = [
                 "command" => "SET_SPN",
                 "msisdn"  => $msisdn,
                 "params"  => [
