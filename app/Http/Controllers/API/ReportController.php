@@ -74,6 +74,8 @@ class ReportController extends Controller
                 'SPN Flag',
                 'PNN Flag',
                 'Status',
+                'Created At',
+                'Updated At'
             ]);
 
             $query = SimLogoTransaction::whereBetween('created_at', [$start, $end])
@@ -90,6 +92,8 @@ class ReportController extends Controller
                             $row->spn_flag,
                             $row->pnn_flag,
                             $row->status,
+                            $row->created_at,
+                            $row->updated_at
                         ]);
                     }
                 });
